@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: event-hub-backend
+    runtime: node
+    buildCommand: 'npm install'
+    startCommand: 'node server.js'
+    envVars:
+      - key: ATLAS_URI
+        value: mongodb+srv://frantzchery:frantzchery123@cluster0.j6bozwi.mongodb.net/capstone-project?retryWrites=true&w=majority&appName=Cluster0
+      - key: PORT
+        value: 4000
+    plan: free
