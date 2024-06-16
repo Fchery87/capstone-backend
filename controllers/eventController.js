@@ -57,7 +57,7 @@ export const getEvent = async (req, res) => {
 
 export const updateEvent = async (req, res) => {
   const { title, description, date, time, location, category, creator } = req.body;
-  let imageUrl = '';
+  let imageUrl = req.body.imageUrl;
 
   if (req.file) {
     imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
