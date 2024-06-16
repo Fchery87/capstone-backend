@@ -1,7 +1,18 @@
-const Event = require('../models/Event');
+import Event from '../models/Event.js';
+import multer from 'multer';
 
-exports.createEvent = async (req, res) => {
-  const { title, description, date, time, location, category, imageUrl, creator } = req.body;
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+export const uploadMiddleware = upload.single('image');
+
+export const createEvent = async (req, res) => {
+  const { title, description, date, time, location, category, creator } = req.body;
+  let imageUrl = '';
+
+  if (req.file) {
+    imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+  }
 
   try {
     const event = new Event({
@@ -18,56 +29,88 @@ exports.createEvent = async (req, res) => {
     await event.save();
     res.json(event);
   } catch (err) {
+    console.error('Error creating event:', err); // Log the error details
     res.status(500).json({ msg: 'Server error' });
   }
 };
 
-exports.getEvents = async (req, res) => {
+export const getEvents = async (req, res) => {
   try {
     const events = await Event.find();
     res.json(events);
   } catch (err) {
+    console.error('Error fetching events:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 };
 
-exports.getEvent = async (req, res) => {
+export const getEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ msg: 'Event not found' });
     res.json(event);
   } catch (err) {
+    console.error('Error fetching event:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 };
 
-exports.updateEvent = async (req, res) => {
-  const { title, description, date, time, location, category, imageUrl, creator } = req.body;
+export const updateEvent = async (req, res) => {
+  const { title, description, date, time, location, category, creator } = req.body;
+  let imageUrl = '';
+
+  if (req.file) {
+    imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+  }
 
   try {
     let event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ msg: 'Event not found' });
 
-    event = await Event.findByIdAndUpdate(
-      req.params.id,
-      { $set: { title, description, date, time, location, category, imageUrl, creator } },
-      { new: true }
-    );
+    event.title = title;
+    event.description = description;
+    event.date = date;
+    event.time = time;
+    event.location = location;
+    event.category = category;
+    event.imageUrl = imageUrl || event.imageUrl;
+    event.creator = creator;
 
+    await event.save();
     res.json(event);
   } catch (err) {
+    console.error('Error updating event:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 };
 
-exports.deleteEvent = async (req, res) => {
+export const deleteEvent = async (req, res) => {
+  try {
+    const event = await Event.findByIdAndDelete(req.params.id);
+    if (!event) return res.status(404).json({ msg: 'Event not found' });
+
+    res.json({ msg: 'Event removed' });
+  } catch (err) {
+    console.error('Error deleting event:', err); // Log the error details
+    res.status(500).json({ msg: 'Server error', error: err.message });
+  }
+};
+
+export const rsvpEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ msg: 'Event not found' });
 
-    await event.remove();
-    res.json({ msg: 'Event removed' });
+    if (!event.attendees.includes(req.user.id)) {
+      event.attendees.push(req.user.id);
+    } else {
+      event.attendees = event.attendees.filter(id => id !== req.user.id);
+    }
+
+    await event.save();
+    res.json(event);
   } catch (err) {
+    console.error('Error RSVPing event:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 };

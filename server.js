@@ -1,24 +1,34 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+import express from 'express';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import morgan from 'morgan';
+import cors from 'cors';
+import authRoutes from './routes/auth.js';
+import eventRoutes from './routes/events.js';
 
-const authRoutes = require('./routes/auth');
-const eventRoutes = require('./routes/events');
+// Load environment variables
+dotenv.config();
+
+// Connect to MongoDB
+mongoose.connect(process.env.ATLAS_URI)
+.then(() => console.log('MongoDB connected'))
+  .catch((err) => console.log(err));
 
 const app = express();
-const port = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4000;
 
+// Middleware
+app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
 
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 
+// Test route
 app.get('/', (req, res) => {
-    res.send('Welcome to the API!');
+  res.send('Server is running');
 });
 
-mongoose.connect(process.env.ATLAS_URI)
-  .then(() => app.listen(port, () => console.log(`Server running on port ${port}`)));
-
+app.listen(PORT, () => console.log(`Server running on port: ${PORT}`));
