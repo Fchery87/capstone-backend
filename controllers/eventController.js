@@ -1,5 +1,5 @@
-import Event from '../models/Event.js';
 import multer from 'multer';
+import Event from '../models/Event.js';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -18,7 +18,7 @@ export const createEvent = async (req, res) => {
     const event = new Event({
       title,
       description,
-      date,
+      date: new Date(date).toISOString(), // Store date as UTC
       time,
       location,
       category,
@@ -29,7 +29,7 @@ export const createEvent = async (req, res) => {
     await event.save();
     res.json(event);
   } catch (err) {
-    console.error('Error creating event:', err); // Log the error details
+    console.error('Error creating event:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 };
@@ -69,7 +69,7 @@ export const updateEvent = async (req, res) => {
 
     event.title = title;
     event.description = description;
-    event.date = date;
+    event.date = new Date(date).toISOString(); // Store date as UTC
     event.time = time;
     event.location = location;
     event.category = category;
@@ -80,7 +80,7 @@ export const updateEvent = async (req, res) => {
     res.json(event);
   } catch (err) {
     console.error('Error updating event:', err);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
 
@@ -91,7 +91,7 @@ export const deleteEvent = async (req, res) => {
 
     res.json({ msg: 'Event removed' });
   } catch (err) {
-    console.error('Error deleting event:', err); // Log the error details
+    console.error('Error deleting event:', err);
     res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
