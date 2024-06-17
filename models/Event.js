@@ -11,6 +11,10 @@ const eventSchema = new mongoose.Schema({
   creator: { type: String, required: true },
 });
 
+// Adding indexes to optimize search queries
+eventSchema.index({ title: 1 });
+eventSchema.index({ date: 1 });
+
 const Event = mongoose.model('Event', eventSchema);
 
 export default Event;

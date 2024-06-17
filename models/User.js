@@ -9,6 +9,9 @@ const userSchema = new mongoose.Schema({
   country: { type: String },
 });
 
+// Adding indexes to optimize search queries
+userSchema.index({ email: 1 });
+
 const User = mongoose.model('User', userSchema);
 
 export default User;
