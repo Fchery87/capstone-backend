@@ -1,29 +1,26 @@
 import multer from 'multer';
 import Event from '../models/Event.js';
 
-// Set up multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 export const uploadMiddleware = upload.single('image');
 
-// Create a new event with all the provided details
 export const createEvent = async (req, res) => {
-  const { title, description, date, time, location, category, creator } = req.body;
+  const { title, description, date, time, endTime, location, category, creator } = req.body;
   let imageUrl = '';
 
-  // If there's an image, convert it to base64 format
   if (req.file) {
     imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
   }
 
   try {
-    // Save the event to the database
     const event = new Event({
       title,
       description,
       date: new Date(date).toISOString(), // Store date as UTC
       time,
+      endTime,
       location,
       category,
       imageUrl,
@@ -38,7 +35,6 @@ export const createEvent = async (req, res) => {
   }
 };
 
-// Fetch all events from the database
 export const getEvents = async (req, res) => {
   try {
     const events = await Event.find();
@@ -49,7 +45,6 @@ export const getEvents = async (req, res) => {
   }
 };
 
-// Fetch a single event by its ID
 export const getEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
@@ -61,12 +56,10 @@ export const getEvent = async (req, res) => {
   }
 };
 
-// Update an existing event with new details
 export const updateEvent = async (req, res) => {
-  const { title, description, date, time, location, category, creator } = req.body;
+  const { title, description, date, time, endTime, location, category, creator } = req.body;
   let imageUrl = req.body.imageUrl;
 
-  // If there's a new image, convert it to base64 format
   if (req.file) {
     imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
   }
@@ -75,11 +68,11 @@ export const updateEvent = async (req, res) => {
     let event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ msg: 'Event not found' });
 
-    // Update the event details
     event.title = title;
     event.description = description;
     event.date = new Date(date).toISOString(); // Store date as UTC
     event.time = time;
+    event.endTime = endTime;
     event.location = location;
     event.category = category;
     event.imageUrl = imageUrl || event.imageUrl;
@@ -93,7 +86,6 @@ export const updateEvent = async (req, res) => {
   }
 };
 
-// Delete an event by its ID
 export const deleteEvent = async (req, res) => {
   try {
     const event = await Event.findByIdAndDelete(req.params.id);
@@ -106,7 +98,6 @@ export const deleteEvent = async (req, res) => {
   }
 };
 
-// RSVP to an event, either adding or removing the user from the attendees list
 export const rsvpEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
