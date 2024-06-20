@@ -1,14 +1,16 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import Event from './models/Event.js';  // Adjust the import path if necessary
+import mongoose from 'mongoose'; // Bringing in mongoose to connect to MongoDB
+import dotenv from 'dotenv'; // dotenv helps us keep our environment variables in check
+import Event from './models/Event.js';  // Importing the Event model
 
-// Load environment variables
+// Load up them environment variables
 dotenv.config();
 
 // Connect to MongoDB
-mongoose.connect(process.env.ATLAS_URI).then(() => console.log('MongoDB connected'))
-  .catch((err) => console.log(err));
+mongoose.connect(process.env.ATLAS_URI)
+  .then(() => console.log('MongoDB connected')) // MongoDB is live, baby
+  .catch((err) => console.log(err)); // Something went wrong, check the error
 
+// Sample events to seed the database
 const sampleEvents = [
   {
     title: 'Tech Conference 2024',
@@ -17,7 +19,7 @@ const sampleEvents = [
     time: '09:00',
     location: 'Silicon Valley Conference Center',
     category: 'Conference',
-    imageUrl: 'https://example.com/images/tech-conference.jpg',  // Add a valid image URL if needed
+    imageUrl: 'https://example.com/images/tech-conference.jpg',  
     creator: 'Tech Events Inc.'
   },
   {
@@ -27,7 +29,7 @@ const sampleEvents = [
     time: '11:00',
     location: 'Downtown Art Plaza',
     category: 'Fair',
-    imageUrl: 'https://example.com/images/art-fair.jpg',  // Add a valid image URL if needed
+    imageUrl: 'https://example.com/images/art-fair.jpg',  
     creator: 'City Art Committee'
   },
   {
@@ -37,20 +39,22 @@ const sampleEvents = [
     time: '15:00',
     location: 'Central Park',
     category: 'Festival',
-    imageUrl: 'https://example.com/images/music-festival.jpg',  // Add a valid image URL if needed
+    imageUrl: 'https://example.com/images/music-festival.jpg',  
     creator: 'Festival Organizers'
   }
 ];
 
+// Function to seed the database with sample events
 const seedDatabase = async () => {
   try {
-    await Event.deleteMany({});
-    await Event.insertMany(sampleEvents);
-    console.log('Sample events inserted successfully');
-    mongoose.disconnect();
+    await Event.deleteMany({}); // Clear out all existing events
+    await Event.insertMany(sampleEvents); // Insert the sample events
+    console.log('Sample events inserted successfully'); // Log success message
+    mongoose.disconnect(); // Disconnect from the database
   } catch (err) {
-    console.error('Error inserting sample events:', err);
+    console.error('Error inserting sample events:', err); // Log any errors
   }
 };
 
+// Call the seedDatabase function to seed the database
 seedDatabase();
